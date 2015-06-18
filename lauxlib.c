@@ -737,7 +737,11 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
   void *nptr;
 
   if (nsize == 0) {
+#ifdef __LINKIT_V1__
+    vm_free(ptr);
+#else
     free(ptr);
+#endif
     return NULL;
   }
   if (L != NULL && (mode & EGC_ALWAYS)) /* always collect memory if requested */

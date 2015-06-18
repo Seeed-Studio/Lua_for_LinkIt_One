@@ -18,7 +18,7 @@
 */
 
 #define LUA_CROSS_COMPILER
-//#define LUA_USE_LINENOISE
+#define LUA_USE_LINENOISE
 
 /*
 @@ LUA_ANSI controls the use of non-ansi features.
@@ -314,11 +314,11 @@
 #define lua_freeline(L,b)	((void)L, free(b))
 #elif defined(LUA_USE_LINENOISE) // #if defined(LUA_USE_READLINE)
 #include "linenoise.h"
-#define lua_readline(L,b,p)     ((void)L, ((b)=linenoise(p)) != NULL)
+#define lua_readline(L,b,p)     ((void)L, (linenoise_getline(LINENOISE_ID_LUA,b,LUA_MAXINPUT,p)) != -1)
 #define lua_saveline(L,idx) \
-  if (lua_strlen(L,idx) > 0)  /* non-empty line? */ \
-    linenoiseHistoryAdd(lua_tostring(L, idx));  /* add it to history */
-#define lua_freeline(L,b)       ((void)L, free(b))
+	if (lua_strlen(L,idx) > 0)  /* non-empty line? */ \
+	  linenoise_addhistory(LINENOISE_ID_LUA, lua_tostring(L, idx));  /* add it to history */
+#define lua_freeline(L,b)	{ (void)L; (void)b; }
 #else // #if defined(LUA_USE_READLINE)
 #define lua_readline(L,b,p)	\
 	((void)L, fputs(p, stdout), fflush(stdout),  /* show prompt */ \

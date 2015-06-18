@@ -13,5 +13,13 @@ int uart_getchar(void)
   return Serial.read();
 }
 
+void uart_puts(char *str)
+{
+    while (*str) {
+        uart_putchar(*str);
+        str++;
+    }
+}
+
 } // extern "C"
 

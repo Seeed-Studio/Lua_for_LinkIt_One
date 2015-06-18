@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __LINKIT_V1__
+#include "vmsys.h"
+#endif
 
 /* This file uses only the official API of Lua.
 ** Any function declared here could be written as an application function.
@@ -746,10 +749,18 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
     if(G(L)->memlimit > 0 && (mode & EGC_ON_MEM_LIMIT) && l_check_memlimit(L, nsize - osize))
       return NULL;
   }
+#ifdef __LINKIT_V1__
+  nptr = vm_realloc(ptr, nsize);
+#else
   nptr = realloc(ptr, nsize);
+#endif
   if (nptr == NULL && L != NULL && (mode & EGC_ON_ALLOC_FAILURE)) {
     luaC_fullgc(L); /* emergency full collection. */
+#ifdef __LINKIT_V1__
+    nptr = vm_realloc(ptr, nsize);
+#else
     nptr = realloc(ptr, nsize); /* try allocation again */
+#endif
   }
   return nptr;
 }

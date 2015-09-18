@@ -20,16 +20,18 @@ void __console_irq_handler(void* parameter, VM_DCL_EVENT event, VM_DCL_HANDLE de
         char data[SERIAL_BUFFER_SIZE];
         int i;
         VM_DCL_STATUS status;
-        VM_DCL_BUFF_LEN returned_len;
+        VM_DCL_BUFF_LEN returned_len = 0;
 
         status = vm_dcl_read(device_handle,(VM_DCL_BUFF*)data,SERIAL_BUFFER_SIZE,&returned_len,vm_dcl_get_ownerid());
         if(status<VM_DCL_STATUS_OK)
         {
             vm_log_info((char*)"read failed");
         }
-        else
+        else if (returned_len)
         {
-            vm_signal_post(console_rx_signal_id);
+            if (console_rx_buffer_head == console_rx_buffer_tail) {
+                vm_signal_post(console_rx_signal_id);
+            }
 
             for (i = 0; i < returned_len; i++)
             {

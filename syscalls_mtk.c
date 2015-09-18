@@ -165,7 +165,7 @@ extern int _read(int file, char *ptr, int len)
         int bytes;
         bytes = vm_file_read(file, ptr, len, &read_bytes);
 
-        printf("_read() - file: %d, content: %X, len: %d, read: %d, read2: %d\n", file, (int)ptr, len, bytes, read_bytes);
+        // printf("_read() - file: %d, content: %X, len: %d, read: %d, read2: %d\n", file, (int)ptr, len, bytes, read_bytes);
         return bytes;
     }
 }
@@ -185,7 +185,7 @@ extern int _write( int file, char *ptr, int len )
 
         vm_file_write(file, ptr, len, &written_bytes);
 
-        printf("_write() - file: %d, content: %s, len: %d, written: %d\n", file, ptr, len, written_bytes);
+        // printf("_write() - file: %d, content: %s, len: %d, written: %d\n", file, ptr, len, written_bytes);
         return written_bytes;
     }
 }
@@ -251,7 +251,7 @@ int _open(const char *file, int flags, int mode)
     VMUINT fs_mode;
     VMWCHAR wfile_name[16];
 
-    printf("_open() - file: %s, flags: 0x%X, mode: 0x%X\n", file, flags, mode);
+    // printf("_open() - file: %s, flags: 0x%X, mode: 0x%X\n", file, flags, mode);
 
     vm_ascii_to_ucs2(wfile_name, sizeof(wfile_name), file);
 

@@ -2,7 +2,7 @@
 
 # GCC_BIN = ../LinkIt-1.1-1.60/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/
 PROJECT = lua
-OBJECTS = main.o syscalls_mtk.o console.o shell.o
+OBJECTS = main.o syscalls_mtk.o console.o shell.o laudiolib.o
 OBJECTS += lua/linenoise.o lua/lapi.o lua/lcode.o lua/ldebug.o lua/ldo.o lua/ldump.o lua/lfunc.o lua/lgc.o lua/llex.o lua/lmem.o \
 	lua/lobject.o lua/lopcodes.o lua/lparser.o lua/lstate.o lua/lstring.o lua/ltable.o lua/ltm.o  \
 	lua/lundump.o lua/lvm.o lua/lzio.o lua/lrotable.o \

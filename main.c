@@ -21,6 +21,7 @@ lua_State *L = NULL;
 
 extern int luaopen_audio(lua_State *L);
 extern int luaopen_gsm(lua_State *L);
+extern int luaopen_timer(lua_State *L);
 
 static int msleep_c(lua_State *L)
 {
@@ -39,6 +40,7 @@ void setup_lua()
 
     luaopen_audio(L);
     luaopen_gsm(L);
+    luaopen_timer(L);
 
     lua_register(L, "msleep", msleep_c);
 

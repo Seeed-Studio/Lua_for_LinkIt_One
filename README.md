@@ -21,18 +21,26 @@ print('hello, lua')
 
 ## API
 + audio
-    - audio.play(music.mp3)
+    - audio.play('music.mp3')
     - audio.pause()
     - audio.resume()
     - audio.stop()
     - audio.set_volome(n), n from 1 to 6
     - audio.get_volome()
-    
+
 + gsm
     - gsm.call(phone_number)
-    - gms.hang()
-    
+    - gsm.hang()
+    - gsm.accept()
+    - gsm.on_incoming_call(function (phone_number) print('incoming call') end)
+    - gsm.text(phone_number, message)
+    - gsm.on_new_message(function (phone_number, message) print('got a message') end)
+
 + timer
     - id = timer.create(interval, repeat_function)
     - timer.delete(id)
-    
+
++ gpio
+    - gpio.mode(pin, mode) - mode: gpio.INPUT, gpio.OUTPUT, gpio.INPUT_PULLUP
+    - gpio.read(pin)
+    - gpio.write(pin, value)

@@ -16,7 +16,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
   Modified 20 Aug 2014 by MediaTek Inc.
-  
+
 */
 
 /**
@@ -34,6 +34,7 @@
 #include "syscalls.h"
 
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #if defined (  __GNUC__  ) /* GCC CS3 */
   #include <sys/types.h>
@@ -41,8 +42,10 @@
 #endif
 
 #include "vmsys.h"
-#include "vmlog.h"
+#include "vmio.h"
+#include "vmchset.h"
 #include "vmdatetime.h"
+#include "vmlog.h"
 
 #undef errno
 extern int errno ;
@@ -51,7 +54,7 @@ extern int  _end ;
 unsigned int g_size = 1024*200;
 unsigned char * base_address = NULL;
 
-#define RESERVED_MEMORY_SIZE  270*1024
+#define RESERVED_MEMORY_SIZE  400*1024
 
 extern void _exit( int status ) ;
 extern void _kill( int pid, int sig ) ;
@@ -94,7 +97,7 @@ extern caddr_t _sbrk ( int incr )
 
     if ( heap == NULL )
     {
-       base = (unsigned char *)base_address; 
+       base = (unsigned char *)base_address;
 	if(base == NULL)
 	{
 		vm_log_fatal("malloc failed");
@@ -105,11 +108,11 @@ extern caddr_t _sbrk ( int incr )
 		vm_log_info("init memory success");
 	}
     }
-    
+
     if (heap + incr > base + g_size) {
         vm_log_fatal("memory not enough");
     }
-    
+
     prev_heap = heap;
 
     heap += incr ;
@@ -125,7 +128,8 @@ extern int link( char *cOld, char *cNew )
 
 extern int _close( int file )
 {
-    return -1 ;
+    vm_file_close(file);
+    return 0;
 }
 
 extern int _fstat( int file, struct stat *st )
@@ -142,41 +146,55 @@ extern int _isatty( int file )
 
 extern int _lseek( int file, int ptr, int dir )
 {
-    return 0 ;
+
+    return vm_file_seek(file, ptr, dir);
 }
 
-__attribute__((weak)) int uart_getchar()
+__attribute__((weak)) int retarget_getc()
 {
     return 0;
 }
 
 extern int _read(int file, char *ptr, int len)
 {
-    int i;
-    
-    for (i = 0; i < len; i++) {
-        *ptr = uart_getchar();
-        ptr++;
+    if (file < 3) {
+        int i;
+        for (i = 0; i < len; i++) {
+            *ptr = retarget_getc();
+            ptr++;
+        }
+        return len;
+    } else {
+        int read_bytes = len;
+        int bytes;
+        bytes = vm_file_read(file, ptr, len, &read_bytes);
+
+        return bytes;
     }
-    
-    return len ;
 }
 
-__attribute__((weak)) void uart_putchar(char c)
+__attribute__((weak)) void retarget_putc(char c)
 {
     
 }
 
 extern int _write( int file, char *ptr, int len )
 {
-    int i;
-    
-    for (i = 0; i < len; i++) {
-        uart_putchar(*ptr);
-        ptr++;
+    if (file < 3) {
+        int i;
+
+        for (i = 0; i < len; i++) {
+            retarget_putc(*ptr);
+            ptr++;
+        }
+        return len ;
+    } else {
+        VMUINT written_bytes;
+
+        vm_file_write(file, ptr, len, &written_bytes);
+
+        return written_bytes;
     }
-    
-    return len ;
 }
 
 extern void _exit( int status )
@@ -201,16 +219,16 @@ typedef void (**__init_array) (void);
 
 void __libc_init_array(void);
 
-void gcc_entry(unsigned int entry, unsigned int init_array_start, unsigned int count) 
+void gcc_entry(unsigned int entry, unsigned int init_array_start, unsigned int count)
 {
   __init_array ptr;
   int i;
   VMUINT size = 0;
 
   vm_get_sym_entry = (vm_get_sym_entry_t)entry;
-  
+
   size = vm_get_total_heap_size();
-  
+
   if(size == 0)
   {
   	base_address = vm_malloc(g_size);
@@ -219,32 +237,45 @@ void gcc_entry(unsigned int entry, unsigned int init_array_start, unsigned int c
   {
   	if(size > RESERVED_MEMORY_SIZE)
 		size -= RESERVED_MEMORY_SIZE;
-	
+
   	base_address = vm_malloc(size);
     	g_size = size;
-}
-
-  vm_log_info("init lib arrays");
+  }
 
   __libc_init_array();
-  
+
   ptr = (__init_array)init_array_start;
 
   for (i = 1; i < count; i++)
   {
   		ptr[i]();
-  } 
+  }
   vm_main();
 }
 
 int _open(const char *file, int flags, int mode)
 {
-    return 0;
+    VMUINT fs_mode;
+    VMWCHAR wfile_name[16];
+
+    vm_ascii_to_ucs2(wfile_name, sizeof(wfile_name), file);
+
+    if (flags & O_CREAT) {
+        fs_mode = MODE_CREATE_ALWAYS_WRITE;
+    } else if ((flags & O_RDWR) || (flags & O_WRONLY)) {
+        fs_mode = MODE_WRITE;
+    } else {
+        fs_mode = MODE_READ;
+    }
+
+    if (flags & O_APPEND) {
+        fs_mode |= MODE_APPEND;
+    }
+
+    return vm_file_open(wfile_name, fs_mode, 0);
 }
 
 int _unlink(const char *file)
 {
- return 0; 
+ return 0;
 }
-
-

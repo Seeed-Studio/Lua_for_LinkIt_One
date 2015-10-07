@@ -412,9 +412,9 @@ int linenoise_savehistory( int id, const char *filename )
 
 #else // #ifdef BUILD_LINENOISE
 
-extern void uart_putchar(char c);
-extern int uart_getchar(void);
-extern void uart_puts(char *str);
+extern void retarget_putc(char c);
+extern int retarget_getc(void);
+extern void retarget_puts(char *str);
 
 int linenoise_getline( int id, char* buffer, int buffer_size, const char* prompt )
 {
@@ -422,20 +422,20 @@ int linenoise_getline( int id, char* buffer, int buffer_size, const char* prompt
     int line_position;
 start:
     /* show prompt */
-    uart_puts(prompt);
+    retarget_puts(prompt);
 
     line_position = 0;
     memset(buffer, 0, buffer_size);
     while (1)
     {
-        ch = uart_getchar();
+        ch = retarget_getc();
         {
             /* backspace key */
             if (ch == 0x7f || ch == 0x08)
             {
                 if (line_position > 0)
                 {
-                    uart_puts("\x08 \x08");
+                    retarget_puts("\x08 \x08");
                     line_position--;
                 }
                 buffer[line_position] = 0;
@@ -455,7 +455,7 @@ start:
             if (ch == '\r' || ch == '\n')
             {
                 buffer[line_position] = 0;
-                uart_putchar('\n');
+                retarget_putc('\n');
                 if (line_position == 0)
                 {
                     /* Get a empty line, then go to get a new line */
@@ -474,7 +474,7 @@ start:
             }
 
             /* echo */
-            uart_putchar(ch);
+            retarget_putc(ch);
             buffer[line_position] = ch;
             ch = 0;
             line_position++;

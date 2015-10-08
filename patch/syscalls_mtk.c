@@ -168,7 +168,8 @@ extern int _read(int file, char *ptr, int len)
         int read_bytes = len;
         int bytes;
         bytes = vm_file_read(file, ptr, len, &read_bytes);
-
+        
+        // printf("_read() - file: %d, content: %X, len: %d, read: %d, read2: %d\n", file, (int)ptr, len, bytes, read_bytes);
         return bytes;
     }
 }
@@ -193,6 +194,7 @@ extern int _write( int file, char *ptr, int len )
 
         vm_file_write(file, ptr, len, &written_bytes);
 
+        // printf("_write() - file: %d, content: %s, len: %d, written: %d\n", file, ptr, len, written_bytes);
         return written_bytes;
     }
 }
@@ -250,6 +252,17 @@ void gcc_entry(unsigned int entry, unsigned int init_array_start, unsigned int c
   {
   		ptr[i]();
   }
+  
+  // To read/write file in normal thread, we must oread or write file at main thread at first.
+  {
+      FILE *pf = fopen("init.lua", "r");
+      if (pf != NULL) {
+        char buf[32];
+        fread(buf, 1, sizeof(buf), pf);
+        fclose(pf);
+      }
+  }
+  
   vm_main();
 }
 

@@ -9,6 +9,10 @@
 #ifndef lua_h
 #define lua_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 
@@ -372,6 +376,10 @@ struct lua_Debug {
 
 int lua_main( int argc, char **argv );
 void dotty (lua_State *L);
+
+#ifdef __cplusplus
+}
+#endif
 
 /******************************************************************************
 * Copyright (C) 1994-2008 Lua.org, PUC-Rio.  All rights reserved.

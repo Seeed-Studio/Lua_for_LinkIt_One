@@ -8,6 +8,9 @@
 #ifndef lauxlib_h
 #define lauxlib_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdio.h>
@@ -173,6 +176,10 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 
 
 #define luaL_reg	luaL_Reg
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

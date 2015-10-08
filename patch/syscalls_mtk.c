@@ -34,6 +34,7 @@
 #include "syscalls.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 #include <stdarg.h>
 #if defined (  __GNUC__  ) /* GCC CS3 */
@@ -168,7 +169,7 @@ extern int _read(int file, char *ptr, int len)
         int read_bytes = len;
         int bytes;
         bytes = vm_file_read(file, ptr, len, &read_bytes);
-        
+
         // printf("_read() - file: %d, content: %X, len: %d, read: %d, read2: %d\n", file, (int)ptr, len, bytes, read_bytes);
         return bytes;
     }
@@ -176,7 +177,7 @@ extern int _read(int file, char *ptr, int len)
 
 __attribute__((weak)) void retarget_putc(char c)
 {
-    
+
 }
 
 extern int _write( int file, char *ptr, int len )
@@ -252,17 +253,20 @@ void gcc_entry(unsigned int entry, unsigned int init_array_start, unsigned int c
   {
   		ptr[i]();
   }
-  
-  // To read/write file in normal thread, we must oread or write file at main thread at first.
+
+  // To read/write file in normal thread, we must firstly read/write file at main thread.
   {
-      FILE *pf = fopen("init.lua", "r");
+      FILE *pf = fopen("README.md", "w+");
       if (pf != NULL) {
         char buf[32];
+        char *project_url = "see https://github.com/xiongyihui/Lua_for_LinkIt_One";
+        fwrite(project_url, 1, strlen(project_url), pf);
+        fseek(pf, 0, SEEK_SET);
         fread(buf, 1, sizeof(buf), pf);
         fclose(pf);
       }
   }
-  
+
   vm_main();
 }
 
